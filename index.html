@@ -16,9 +16,9 @@
             height: 100vh;
             position: relative;
             display: flex;
-            justify-content: center; /* 중앙 정렬 */
-            align-items: center; /* 수직 중앙 정렬 */
-            flex-direction: column; /* 중앙 정렬 */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
 
         .captcha-container {
@@ -68,18 +68,10 @@
             transform: translate(-50%, -50%);
             cursor: pointer;
             z-index: 1;
+            opacity: 1;
+            pointer-events: none; /* 초기에는 클릭 비활성화 */
         }
 
-#confirmButton {
-    position: absolute;
-    top: calc(76.4%); /* tile9 아래로 10px 떨어지게 설정 */
-    left: 50%;
-    transform: translateX(60%);
-    cursor: pointer;
-    z-index: 3;
-    opacity: 1;
-    pointer-events: none;
-}
         /* 이미지 테두리 없애기 */
         #popupImage, #reasonButton {
             width: 60%;
@@ -107,9 +99,8 @@
         <img src="tile9.jpg" class="tile" onclick="selectTile(this)">
     </div>
 
-    <img id="confirmButton" src="confirm_button.png" onclick="showPopup()">
-
-    <img src="extra_image.jpg" class="extra-image">
+    <!-- 엑스트라 이미지: 처음부터 표시되지만 3장 선택 후에만 클릭 가능 -->
+    <img src="extra_image.jpg" class="extra-image" id="extraImage" onclick="checkSelection()">
 
     <!-- 바로 이미지로 띄우기 -->
     <img id="popupImage" src="not_a_pigeon.jpg" style="display:none;">
@@ -121,8 +112,8 @@
 
     <script>
         let selectedTiles = [];
-        let reasonButtonDisplayed = false;
 
+        // 이미지 선택 기능
         function selectTile(tile) {
             if (tile.classList.contains("selected")) {
                 tile.classList.remove("selected");
@@ -133,24 +124,37 @@
                     selectedTiles.push(tile);
                 }
             }
-            let confirmButton = document.getElementById("confirmButton");
+            updateExtraImageState();
+        }
+
+        // 3장 선택 시 extra-image 클릭 활성화
+        function updateExtraImageState() {
+            const extraImage = document.getElementById("extraImage");
             if (selectedTiles.length === 3) {
-                confirmButton.style.opacity = "1";
-                confirmButton.style.pointerEvents = "auto";
+                extraImage.style.pointerEvents = "auto"; // 클릭 활성화
+                extraImage.style.opacity = "1"; // 시각적 효과 (원하면 변경 가능)
             } else {
-                confirmButton.style.opacity = "1";
-                confirmButton.style.pointerEvents = "none";
+                extraImage.style.pointerEvents = "none"; // 클릭 비활성화
+                extraImage.style.opacity = "0.5"; // 클릭 불가 시 시각적 효과
             }
         }
 
+        // 엑스트라 이미지 클릭 시 팝업 표시
+        function checkSelection() {
+            if (selectedTiles.length === 3) {
+                showPopup();
+            }
+        }
+
+        // 팝업 이미지 표시
         function showPopup() {
-            // 바로 이미지를 화면에 표시
             document.getElementById("popupImage").style.display = "block";
             setTimeout(() => {
                 document.getElementById("reasonButton").style.display = "inline";
             }, 3000);
         }
 
+        // 비디오 재생
         function playVideo() {
             document.getElementById("popupImage").style.display = "none";
             document.getElementById("reasonButton").style.display = "none";
@@ -158,15 +162,16 @@
             document.getElementById("video").play();
         }
 
+        // 초기화
         function resetCaptcha() {
             document.getElementById("videoContainer").style.display = "none";
             selectedTiles.forEach(tile => tile.classList.remove("selected"));
             selectedTiles = [];
+            updateExtraImageState();
             document.getElementById("popupImage").style.display = "none";
             document.getElementById("reasonButton").style.display = "none";
-            document.getElementById("confirmButton").style.opacity = "1";
-            document.getElementById("confirmButton").style.pointerEvents = "none";
         }
     </script>
 </body>
 </html>
+
